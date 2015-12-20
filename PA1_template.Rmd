@@ -1,0 +1,105 @@
+---
+title: "Reproducible Research: Peer Assignment 1"
+output: html_document
+---
+======================================================================================
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Loading and preprocessing the data
+
+At this stage of the analysis, we check the sanity of the data, change variable formats if necessary etc..
+
+```{r, message=FALSE, warning=FALSE }
+library(dplyr)
+``` 
+
+```{r }
+Assig=read.csv("C:/Yohannes/Coursera/Reproducible research/Assign1/activity.csv", stringsAsFactors = FALSE)
+str(Assig)
+Assig$date=as.Date(Assig$date, "%Y-%m-%d")
+head(Assig)
+tail(Assig)
+``` 
+#Questions
+# 1) What is mean total number of steps taken per day?
+
+```{r }
+#Ignore missing values
+Assig2=Assig[complete.cases(Assig),]
+#The total number of steps taken per day using dplyr
+sum_by_date1=group_by(Assig2,date)%>%summarise(sum_steps=sum(steps))
+```
+
+# 2)Histogram
+
+```{r, message=FALSE, warning=FALSE }
+#Here i use ggplot2 to draw the Histogram
+library(ggplot2)
+``` 
+```{r, message=FALSE }
+g=ggplot(sum_by_date1,aes(sum_steps))
+g+geom_histogram(fill="red")
+```
+```{r message=FALSE}
+#Mean and Median
+group_by(Assig2,date)%>%summarise(sum_steps=sum(steps))%>%summarise(Mean_steps=mean(sum_steps),Median_steps=median(sum_steps))
+#We can see that the mean and Median value are slightly different 
+```
+
+## 2) What is the average daily activity pattern?
+
+```{r }
+#Timeseries Plot using ggplot
+time_series=group_by(Assig2,interval)%>%summarise(Mean_steps=mean(steps))
+g=ggplot(time_series,aes(interval,Mean_steps))
+g+geom_line(col="red")+scale_x_continuous()
+```
+
+```{r }
+#Max interval
+Max_int=group_by(Assig2,interval)%>%summarise(Mean_steps=mean(steps))%>%filter(Max_Step=(Mean_steps==max(Mean_steps)))
+
+#The maximum  number of steps occured at the 835 th interval
+```
+
+## 3) Imputing missing values
+```{r }
+#Total number of missing values
+sum(is.na(Assig))
+```
+
+```{r message=FALSE}
+#Strategy (I used the mean of 5-minute interval)
+mean_int=group_by(Assig2,interval)%>%summarise(Mean_steps=mean(steps))
+#Imputed  dataset
+imputed=left_join(Assig,mean_int)%>%mutate(steps2=ifelse(is.na(steps),Mean_steps, steps))
+imputed=imputed%>%select(-steps)
+head(imputed)
+```
+
+```{r message=FALSE, warning=FALSE}
+#Histogram, mean and median
+sum_by_date2=group_by(imputed,date)%>%summarise(sum_steps=sum(steps2))
+g=ggplot(sum_by_date2,aes(sum_steps))
+g+geom_histogram(fill='red')
+#Checking difference
+group_by(imputed,date)%>%summarise(sum_steps=sum(steps2))%>%summarise(Mean_steps=mean(sum_steps),Median=median(sum_steps))
+#Now we see that mean and median values are exactly the same after imputation
+```
+
+
+## 4) Weekend and Weekday
+
+```{r }
+#Creating a new factor variable
+imputed2=imputed%>%mutate(week_cat=ifelse(weekdays(date)%in% c("Saturday","Sunday"),'Weekend','Weekday'))
+
+#Timeseries
+head(imputed2)
+time_series2=group_by(imputed2,week_cat,interval)%>%summarise(Mean_steps=mean(steps2))
+g=ggplot(time_series2,aes(interval,Mean_steps))
+g+geom_line(col="red")+scale_x_continuous()+facet_wrap(~week_cat, ncol=1)+labs(y="Number of steps")
+
+```
