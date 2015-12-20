@@ -1,6 +1,6 @@
 ---
 title: "Reproducible Research: Peer Assignment 1"
-#output: html_document
+output: md_document
 ---
 ======================================================================================
 
