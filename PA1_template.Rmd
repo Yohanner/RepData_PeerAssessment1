@@ -1,11 +1,8 @@
 ---
 title: "Reproducible Research: Peer Assignment 1"
-output: html_document
+#output: html_document
 ---
 ======================================================================================
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
 ## Loading and preprocessing the data
 
@@ -38,7 +35,7 @@ sum_by_date1=group_by(Assig2,date)%>%summarise(sum_steps=sum(steps))
 #Here i use ggplot2 to draw the Histogram
 library(ggplot2)
 ``` 
-```{r, message=FALSE }
+```{r histo, message=FALSE }
 g=ggplot(sum_by_date1,aes(sum_steps))
 g+geom_histogram(fill="red")
 ```
@@ -103,3 +100,6 @@ g=ggplot(time_series2,aes(interval,Mean_steps))
 g+geom_line(col="red")+scale_x_continuous()+facet_wrap(~week_cat, ncol=1)+labs(y="Number of steps")
 
 ```
+
+
+
